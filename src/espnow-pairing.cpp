@@ -18,7 +18,7 @@
 #include <globals.h>
 #include <datastructs.h>
 #include <utils.h>
-#include <Preferences.h>
+
 
 esp_now_peer_info_t slave;
 // Old button variables - now handled in commandHandler.cpp
@@ -26,7 +26,7 @@ esp_now_peer_info_t slave;
 // unsigned long lastButtonEvent = 0;
 unsigned long pairingStartTime = 0;
 
-Preferences preferences;
+
 uint8_t clientMacAddresses[MAX_CLIENTS][6];
 int numClients = 0;
 
@@ -89,93 +89,12 @@ void pairingforceStart(){
   log(LOG_DEBUG, "Pairing mode enabled (forced).");
 }
 
-void savePeers() {
-  preferences.begin("espnow", false);
 
-  int validCount = 0;
+// Centralized in nvsManager.cpp
+#include <nvsManager.h>
 
-  logf(LOG_INFO, "Saving up to %d peers to NVS...", numClients);
 
-  for (int i = 0; i < numClients; i++) {
-    if (memcmp(clientMacAddresses[i], "\0\0\0\0\0\0", 6) != 0) {
-      char key[12];
-      sprintf(key, "peer_%d", validCount);  // use validCount index for keys
-      preferences.putBytes(key, clientMacAddresses[i], 6);
-      char nameKey[16];
-      sprintf(nameKey, "peername_%d", validCount);
-      preferences.putString(nameKey, getPeerName(clientMacAddresses[i]));
-      logf(LOG_INFO, "Saved Peer: %s", getPeerName(clientMacAddresses[i]));
-      printMAC(clientMacAddresses[i], LOG_DEBUG);
-      validCount++;
-    } else {
-      logf(LOG_ERROR, "Skipped Peer %d - empty or invalid MAC", i);
-    }
-  }
 
-  preferences.putInt("numClients", validCount);
-  preferences.putInt("version", STORAGE_VERSION);
-
-  preferences.end();
-  logf(LOG_INFO, "Saved %d valid peers.", validCount);
-  logf(LOG_DEBUG, "Actual numClients in RAM: %d", numClients);
-}
-
-void clearPeers(bool fullErase) {
-  esp_now_deinit();
-  esp_now_init();
-  numClients = 0;
-  preferences.begin("espnow", false);
-  if (fullErase) preferences.clear();
-  log(LOG_INFO, "All Peers Removed");
-  preferences.putInt("version", STORAGE_VERSION);
-  preferences.end();
-  ESP.restart();
-}
-
-void loadPeers() {
- log(LOG_DEBUG, "Load Peers...");
-  preferences.begin("espnow", true);
-  
-  if (preferences.getInt("version", 0) != STORAGE_VERSION) {
-    preferences.end();
-    clearPeers(false);
-    preferences.begin("espnow", false);
-    preferences.putInt("version", STORAGE_VERSION);
-    preferences.end();
-    return;
-  }
-
-  int storedClients = preferences.getInt("numClients", 0);
-  logf(LOG_DEBUG, "numClients in NVS: %d", storedClients);
-  int loadedClients = 0;
-
-  for (int i = 0; i < storedClients; i++) {
-    char key[12];
-    char nameKey[16];
-    //uint8_t mac[6];
-    sprintf(key, "peer_%d", i);
-    sprintf(nameKey, "peername_%d", i);
-    size_t len = preferences.getBytesLength(key);
-
-    if (len == 6) {
-      preferences.getBytes(key, clientMacAddresses[loadedClients], 6);
-      String name = preferences.getString(nameKey, "Unknown");
-      addLabeledPeer(clientMacAddresses[loadedClients], name.c_str());
-      addPeer(clientMacAddresses[loadedClients], false);
-      logf(LOG_INFO, "Loading Peer: %s", name.c_str());
-      printMAC(clientMacAddresses[loadedClients], LOG_INFO);
-      loadedClients++;
-    } 
-    else 
-    {
-      logf(LOG_ERROR, "Warning: Key %s missing or corrupted", key);
-    }
-  }
-
-  numClients = loadedClients; 
-  preferences.end();
-  logf(LOG_DEBUG, "Actual numClients in RAM: %d", numClients);
-}
 
 void checkPairingTimeout() {
   if (pairingMode && (millis() - pairingStartTime > PAIRING_TIMEOUT_MS)) {
@@ -312,7 +231,7 @@ bool addPeer(const uint8_t *peer_addr, bool save) {      // add pairing
       memcpy(clientMacAddresses[numClients], peer_addr, 6);
       numClients++;
       log(LOG_DEBUG, "Pair success");
-      if (save) savePeers();
+  if (save) savePeersToNVS();
       return true;
     }
     else 

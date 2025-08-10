@@ -22,7 +22,7 @@
 #include <esp_err.h>
 #include <nvs.h>
 
-extern Preferences preferences;
+Preferences preferences;
 
 // NVS initialization and version management
 void checkNVS() {

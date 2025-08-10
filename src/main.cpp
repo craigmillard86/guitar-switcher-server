@@ -101,7 +101,7 @@ void setup() {
   setupWiFiChannel();
   setupPairingButtonAndLED();  // This will now use the new system
   initESP_NOW();
-  loadPeers();
+  loadPeersFromNVS();
   initMidiInput();
   loadServerMidiConfigFromNVS();
   loadServerButtonPcMapFromNVS();
@@ -126,11 +126,13 @@ void loop() {
   // Poll MIDI input (non-blocking)
   processMidiInput();
 
+
   if (footswitchPressed && !lastFootswitchState) {
     prepareChannelChangeCommand();
-    uint8_t* targetMac = getPeerMacByName(TARGET_PEER_NAME);
-    esp_now_send(targetMac, (uint8_t *)&outgoingCommand, sizeof(outgoingCommand));
-    log(LOG_INFO, "Footswitch pressed: sent channel change command");
+    for (int i = 0; i < numLabeledPeers; i++) {
+      esp_now_send(labeledPeers[i].mac, (uint8_t *)&outgoingCommand, sizeof(outgoingCommand));
+      logf(LOG_INFO, "Footswitch pressed: sent channel change command to peer %s", labeledPeers[i].name);
+    }
   }
 
   lastFootswitchState = footswitchPressed;

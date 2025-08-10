@@ -15,53 +15,19 @@
 #pragma once
 #include <Arduino.h>
 
-// Server Type Definitions
-enum ServerType {
-    SERVER_GUITAR_SWITCHER,
-    SERVER_SENSOR_HUB,
-    SERVER_CUSTOM
-};
+#define HAS_FOOTSWITCH true
+#define HAS_RELAY_OUTPUTS true
 
-// Default server type if not specified
-#ifndef SERVER_TYPE
-#define SERVER_TYPE GUITAR_SWITCHER
+#ifndef MAX_RELAY_CHANNELS
+#define MAX_RELAY_CHANNELS 4
 #endif
 
-// Server Type Configuration
-#if SERVER_TYPE == GUITAR_SWITCHER
-    #define SERVER_TYPE_ENUM SERVER_GUITAR_SWITCHER
-    #define HAS_FOOTSWITCH true
-    #define HAS_RELAY_OUTPUTS true
-    #define HAS_AUDIO_ROUTING true
-    
-    #ifndef MAX_RELAY_CHANNELS
-    #define MAX_RELAY_CHANNELS 4
-    #endif
-    
-    #ifndef RELAY_OUTPUT_PINS
-    #define RELAY_OUTPUT_PINS "6,7"
-    #endif
-    
-    #ifndef FOOTSWITCH_PINS
-    #define FOOTSWITCH_PINS "4,5"
-    #endif
+#ifndef RELAY_OUTPUT_PINS
+#define RELAY_OUTPUT_PINS "6,7"
+#endif
 
-#elif SERVER_TYPE == SENSOR_HUB
-    #define SERVER_TYPE_ENUM SERVER_SENSOR_HUB
-    #define HAS_FOOTSWITCH false
-    #define HAS_RELAY_OUTPUTS false
-    #define HAS_AUDIO_ROUTING false
-    #define HAS_SENSOR_INPUTS true
-    
-    #ifndef MAX_SENSOR_INPUTS
-    #define MAX_SENSOR_INPUTS 8
-    #endif
-
-#else // CUSTOM
-    #define SERVER_TYPE_ENUM SERVER_CUSTOM
-    #define HAS_FOOTSWITCH false
-    #define HAS_RELAY_OUTPUTS false
-    #define HAS_AUDIO_ROUTING false
+#ifndef FOOTSWITCH_PINS
+#define FOOTSWITCH_PINS "4,5"
 #endif
 
 // Device name configuration
@@ -78,14 +44,6 @@ enum ServerType {
 #define PAIRING_BUTTON_PIN 0
 #endif
 
-#ifndef FOOTSWITCH_PIN
-#define FOOTSWITCH_PIN 12
-#endif
-
-#ifndef STATUS_LED_PIN
-#define STATUS_LED_PIN 8
-#endif
-
 // LEDC Configuration
 #ifndef LEDC_CHANNEL_0
 #define LEDC_CHANNEL_0 0
@@ -99,10 +57,6 @@ enum ServerType {
 #define LEDC_BASE_FREQ 1000
 #endif
 
-// Communication settings
-#ifndef TARGET_PEER_NAME
-#define TARGET_PEER_NAME "Client Sensor"
-#endif
 
 // MIDI UART configuration (5-pin DIN IN -> opto to RX). Adjust as needed.
 #ifndef MIDI_UART_NUM
