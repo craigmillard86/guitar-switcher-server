@@ -106,7 +106,6 @@ void printRelayStatus() {
 
 // Footswitch functions (always available)
 void updateFootswitchState() {
-#if HAS_FOOTSWITCH
     static bool lastFootswitchStates[4] = {false, false, false, false};
     
     for (int i = 0; i < 4; i++) {
@@ -125,22 +124,11 @@ void updateFootswitchState() {
             }
         }
     }
-#else
-    // For non-footswitch configurations, keep the original single pin behavior
-    footswitchPressed = digitalRead(FOOTSWITCH_PIN) == LOW;
-#endif
 }
 
 bool isFootswitchPressed(uint8_t footswitchIndex) {
-#if HAS_FOOTSWITCH
     if (footswitchIndex < 4 && footswitchPins[footswitchIndex] != 255) {
         return digitalRead(footswitchPins[footswitchIndex]) == LOW;
     }
     return false;
-#else
-    if (footswitchIndex == 0) {
-        return digitalRead(FOOTSWITCH_PIN) == LOW;
-    }
-    return false;
-#endif
 }

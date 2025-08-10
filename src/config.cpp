@@ -44,24 +44,12 @@ uint8_t* parsePinArray(const char* pinString) {
     return pins;
 }
 
-String getServerTypeString() {
-    switch (SERVER_TYPE_ENUM) {
-        case SERVER_GUITAR_SWITCHER:
-            return "Guitar Switcher Server";
-        case SERVER_SENSOR_HUB:
-            return "Sensor Hub Server";
-        case SERVER_CUSTOM:
-            return "Custom Server";
-        default:
-            return "Unknown";
-    }
-}
+
 
 void printServerConfiguration() {
     log(LOG_INFO, "=== SERVER CONFIGURATION ===");
     
-    String serverType = getServerTypeString();
-    logf(LOG_INFO, "Server Type: %s", serverType.c_str());
+    logf(LOG_INFO, "Server Type: Guitar Switcher Server");
     
     if (deviceName[0] != '\0') {
         logf(LOG_INFO, "Device Name: %s", deviceName);
@@ -100,12 +88,8 @@ void printServerConfiguration() {
     logf(LOG_INFO, "Pairing LED Pin: %d", PAIRING_LED_PIN);
     logf(LOG_INFO, "Pairing Button Pin: %d", PAIRING_BUTTON_PIN);
     
-#ifdef STATUS_LED_PIN
-    logf(LOG_INFO, "Status LED Pin: %d", STATUS_LED_PIN);
-#endif
 
     logf(LOG_INFO, "Max Clients: %d", MAX_CLIENTS);
-    logf(LOG_INFO, "Target Peer: %s", TARGET_PEER_NAME);
     logf(LOG_INFO, "NVS Namespace: %s", NVS_NAMESPACE);
     logf(LOG_INFO, "Storage Version: %d", STORAGE_VERSION);
     log(LOG_INFO, "=== END CONFIGURATION ===");
@@ -194,10 +178,8 @@ void initializeServerConfiguration() {
     serverButtonCount = 1; // only pairing button
 #endif
     
-#ifdef STATUS_LED_PIN
-    pinMode(STATUS_LED_PIN, OUTPUT);
-    digitalWrite(STATUS_LED_PIN, LOW);
-#endif
+    pinMode(PAIRING_LED_PIN, OUTPUT);
+    digitalWrite(PAIRING_LED_PIN, LOW);
     
     log(LOG_DEBUG, "Hardware initialization complete");
     

@@ -152,9 +152,6 @@ void printPinConfiguration() {
     
     logf(LOG_INFO, "Pairing LED Pin: GPIO %d", PAIRING_LED_PIN);
     logf(LOG_INFO, "Pairing Button Pin: GPIO %d", PAIRING_BUTTON_PIN);
-#ifdef STATUS_LED_PIN
-    logf(LOG_INFO, "Status LED Pin: GPIO %d", STATUS_LED_PIN);
-#endif
     logf(LOG_INFO, "========================");
 }
 
@@ -313,7 +310,9 @@ bool handlePairingCommands(const String& cmd) {
         return true;
     } else if (cmd.equalsIgnoreCase("clear")) {
         log(LOG_INFO, "Clearing all peers from NVS...");
-        clearPeers(true);
+    clearPeersNVS();
+    clearAllNVS();
+    ESP.restart();
         return true;
     } else if (cmd.equalsIgnoreCase("pairing")) {
         printPairingStatus();

@@ -23,8 +23,5 @@ void updatePairingLED();  // Now uses advanced LED patterns
 extern bool pairingMode;
 extern volatile bool pairingRequested;
 bool addPeer(const uint8_t *peer_addr, bool save);
-void clearPeers(bool fullErase);
-void loadPeers();
-void savePeers();
-void checkNVS();
+
 
