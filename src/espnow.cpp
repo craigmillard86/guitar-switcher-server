@@ -74,7 +74,7 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
     log(LOG_INFO, "Pairing request from MAC Address: ");
     printMAC(pairingData.macAddr, LOG_INFO);
     logf(LOG_INFO, "Named: %s", pairingData.name);
-    logf(LOG_INFO, "On channel: %d", pairingData.channel);
+  logf(LOG_INFO, "Client was on channel: %d", pairingData.channel);
 
     clientMacAddress[0] = pairingData.macAddr[0];
     clientMacAddress[1] = pairingData.macAddr[1];
@@ -86,14 +86,14 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
     if (pairingData.id > 0) {     // do not replay to server itself
       if (pairingData.msgType == PAIRING) { 
         pairingData.id = 0;       // 0 is server
-       log(LOG_INFO, "Pairing MAC Address: ");
+        log(LOG_INFO, "Pairing MAC Address: ");
         printMAC(clientMacAddress, LOG_INFO);
         esp_wifi_get_mac(WIFI_IF_STA, pairingData.macAddr);
         pairingData.channel = chan;
+        logf(LOG_INFO, "Server instructs client to switch to channel: %d", chan);
         esp_err_t result = esp_now_send(clientMacAddress, (uint8_t *) &pairingData, sizeof(pairingData));
         addLabeledPeer(clientMacAddress,pairingData.name);
         addPeer(clientMacAddress, true);
-        
       }  
     }  
     break; 

@@ -161,26 +161,23 @@ void clearServerConfigNVS() {
 // Peer management (extracted from espnow-pairing.cpp)
 void savePeersToNVS() {
     preferences.begin("espnow", false);
-    
     int validCount = 0;
-    logf(LOG_INFO, "Saving up to %d peers to NVS...", numClients);
-    
-    for (int i = 0; i < numClients; i++) {
-        if (memcmp(clientMacAddresses[i], "\0\0\0\0\0\0", 6) != 0) {
+    logf(LOG_INFO, "Saving up to %d peers to NVS...", numLabeledPeers);
+    for (int i = 0; i < numLabeledPeers; i++) {
+        if (memcmp(labeledPeers[i].mac, "\0\0\0\0\0\0", 6) != 0) {
             char key[12];
-            sprintf(key, "peer_%d", validCount);  // use validCount index for keys
-            preferences.putBytes(key, clientMacAddresses[i], 6);
+            sprintf(key, "peer_%d", validCount);
+            preferences.putBytes(key, labeledPeers[i].mac, 6);
             char nameKey[16];
             sprintf(nameKey, "peername_%d", validCount);
-            preferences.putString(nameKey, getPeerName(clientMacAddresses[i]));
-            logf(LOG_INFO, "Saved Peer: %s", getPeerName(clientMacAddresses[i]));
-            printMAC(clientMacAddresses[i], LOG_DEBUG);
+            preferences.putString(nameKey, labeledPeers[i].name);
+            logf(LOG_INFO, "Saved Peer: %s", labeledPeers[i].name);
+            printMAC(labeledPeers[i].mac, LOG_DEBUG);
             validCount++;
         } else {
             logf(LOG_ERROR, "Skipped Peer %d - empty or invalid MAC", i);
         }
     }
-    
     preferences.putInt("numClients", validCount);
     preferences.putInt("version", STORAGE_VERSION);
     preferences.end();

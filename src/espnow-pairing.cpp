@@ -210,13 +210,11 @@ bool addPeer(const uint8_t *peer_addr, bool save) {      // add pairing
   memset(&slave, 0, sizeof(slave));
   const esp_now_peer_info_t *peer = &slave;
   memcpy(slave.peer_addr, peer_addr, 6);
-  
   slave.channel = chan; // pick a channel
   slave.encrypt = 0; // no encryption
   // check if the peer exists
   bool exists = esp_now_is_peer_exist(slave.peer_addr);
   if (exists || numClients >= MAX_CLIENTS) {
-    // Slave already paired.
     log(LOG_DEBUG, "Already Paired");
     return true;
   }
@@ -224,21 +222,34 @@ bool addPeer(const uint8_t *peer_addr, bool save) {      // add pairing
     log(LOG_DEBUG, "Invalid MAC address — not adding.");
     return false;
   }
-  else {
-    esp_err_t addStatus = esp_now_add_peer(peer);
-    if (addStatus == ESP_OK) {
-      // Pair success
-      memcpy(clientMacAddresses[numClients], peer_addr, 6);
-      numClients++;
-      log(LOG_DEBUG, "Pair success");
-  if (save) savePeersToNVS();
-      return true;
+  esp_err_t addStatus = esp_now_add_peer(peer);
+  if (addStatus == ESP_OK) {
+    // Pair success
+    memcpy(clientMacAddresses[numClients], peer_addr, 6);
+    numClients++;
+    // Also add to labeledPeers if not present
+    bool found = false;
+    for (int i = 0; i < numLabeledPeers; i++) {
+      if (memcmp(labeledPeers[i].mac, peer_addr, 6) == 0) {
+        found = true;
+        break;
+      }
     }
-    else 
-    {
-      log(LOG_DEBUG, "Pair failed");
-      return false;
+    if (!found && numLabeledPeers < MAX_CLIENTS) {
+      memcpy(labeledPeers[numLabeledPeers].mac, peer_addr, 6);
+      // Use pairingData.name if available, else empty string
+      extern struct_pairing pairingData;
+      strncpy(labeledPeers[numLabeledPeers].name, pairingData.name, MAX_PEER_NAME_LEN);
+      numLabeledPeers++;
     }
+    // Keep numClients and numLabeledPeers in sync
+    if (numLabeledPeers < numClients) numLabeledPeers = numClients;
+    log(LOG_DEBUG, "Pair success");
+    if (save) savePeersToNVS();
+    return true;
+  } else {
+    log(LOG_DEBUG, "Pair failed");
+    return false;
   }
 } 
 
