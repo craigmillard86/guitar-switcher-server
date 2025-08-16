@@ -91,9 +91,10 @@ void OnDataRecv(const uint8_t * mac_addr, const uint8_t *incomingData, int len) 
         esp_wifi_get_mac(WIFI_IF_STA, pairingData.macAddr);
         pairingData.channel = chan;
         logf(LOG_INFO, "Server instructs client to switch to channel: %d", chan);
-        esp_err_t result = esp_now_send(clientMacAddress, (uint8_t *) &pairingData, sizeof(pairingData));
         addLabeledPeer(clientMacAddress,pairingData.name);
-        addPeer(clientMacAddress, true);
+        addPeer(clientMacAddress, true);  // Add to ESP-NOW peer list first
+        esp_err_t result = esp_now_send(clientMacAddress, (uint8_t *) &pairingData, sizeof(pairingData));
+        logf(LOG_INFO, "esp_now_send result: %s (0x%04X)", esp_err_to_name(result), result);
       }  
     }  
     break; 

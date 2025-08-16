@@ -31,13 +31,17 @@ void setRelayChannel(uint8_t channel) {
         if (relayOutputPins[channel - 1] != 255) {
             digitalWrite(relayOutputPins[channel - 1], HIGH);
             currentRelayChannel = channel;
+            #ifndef FAST_SWITCHING
             logf(LOG_INFO, "Relay channel %d activated", channel);
+            #endif
         } else {
             logf(LOG_ERROR, "Invalid relay pin for channel %d", channel);
         }
     } else if (channel == 0) {
         currentRelayChannel = 0;
-        log(LOG_INFO, "All relays turned off");
+    #ifndef FAST_SWITCHING
+    log(LOG_INFO, "All relays turned off");
+    #endif
     } else {
         logf(LOG_ERROR, "Invalid relay channel: %d (valid: 0-%d)", channel, MAX_RELAY_CHANNELS);
     }
@@ -119,7 +123,9 @@ void updateFootswitchState() {
             
             // Log state changes
             if (currentState != lastFootswitchStates[i]) {
+                #ifndef FAST_SWITCHING
                 logf(LOG_DEBUG, "Footswitch %d: %s", i+1, currentState ? "PRESSED" : "RELEASED");
+                #endif
                 lastFootswitchStates[i] = currentState;
             }
         }

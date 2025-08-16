@@ -308,11 +308,15 @@ bool handlePairingCommands(const String& cmd) {
         simulateButton2Press();
         log(LOG_INFO, "Button 2 press simulated");
         return true;
-    } else if (cmd.equalsIgnoreCase("clear")) {
+    } else if (cmd.equalsIgnoreCase("clearpeers")) {
         log(LOG_INFO, "Clearing all peers from NVS...");
-    clearPeersNVS();
-    clearAllNVS();
-    ESP.restart();
+        clearPeersNVS();
+        ESP.restart();
+        return true;
+    } else if (cmd.equalsIgnoreCase("clearall")) {
+        log(LOG_WARN, "Clearing ALL NVS data and rebooting...");
+        clearAllNVS();
+        ESP.restart();
         return true;
     } else if (cmd.equalsIgnoreCase("pairing")) {
         printPairingStatus();
@@ -491,7 +495,8 @@ void printControlCommandsHelp() {
 void printPairingCommandsHelp() {
     Serial.println(F("PAIRING COMMANDS:"));
     Serial.println(F("  pair        : Start pairing mode"));
-    Serial.println(F("  clear       : Clear all peers from NVS"));
+    Serial.println(F("  clearpeers  : Clear all peers from NVS"));
+    Serial.println(F("  clearall    : Clear ALL NVS data (factory reset)"));
     Serial.println(F("  pairing     : Show pairing status"));
     Serial.println(F(""));
 }

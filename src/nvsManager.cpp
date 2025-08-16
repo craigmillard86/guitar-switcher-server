@@ -21,6 +21,7 @@
 #include <nvs_flash.h>
 #include <esp_err.h>
 #include <nvs.h>
+#include <esp_now.h>
 
 Preferences preferences;
 
@@ -254,14 +255,40 @@ void saveServerMidiMapToNVS() {
 
 void clearPeersNVS() {
     if (preferences.begin("espnow", false)) {
-        // Clear all client entries
+        // Clear peers by setting numClients to 0 and overwriting with empty data
+        // This avoids remove() issues while achieving the same result
+        uint8_t emptyMAC[6] = {0,0,0,0,0,0};
+        
         for (int i = 0; i < MAX_CLIENTS; i++) {
-            String key = "client" + String(i);
-            preferences.remove(key.c_str());
+            char peerKey[12];
+            char nameKey[16];
+            sprintf(peerKey, "peer_%d", i);
+            sprintf(nameKey, "peername_%d", i);
+            
+            // Overwrite with empty data instead of removing
+            preferences.putBytes(peerKey, emptyMAC, 6);
+            preferences.putString(nameKey, "");
         }
-        preferences.remove("numClients");
+        
+        // Set peer count to zero
+        preferences.putInt("numClients", 0);
         preferences.end();
-        log(LOG_INFO, "All peers cleared from NVS");
+        
+        // Remove peers from ESP-NOW peer list
+        for (int i = 0; i < numClients; i++) {
+            esp_now_del_peer(clientMacAddresses[i]);
+        }
+        
+        // Clear in-memory peer data immediately
+        numClients = 0;
+        numLabeledPeers = 0;
+        memset(clientMacAddresses, 0, sizeof(clientMacAddresses));
+        memset(labeledPeers, 0, sizeof(labeledPeers));
+        
+        // Save the cleared state to ensure consistency
+        savePeersToNVS();
+        
+        log(LOG_INFO, "All peers cleared from NVS, memory, and ESP-NOW peer list");
     } else {
         log(LOG_ERROR, "Failed to clear peers from NVS");
     }
