@@ -45,9 +45,11 @@ bool sendCommandToClient(const uint8_t* clientMac, uint8_t commandType, uint8_t 
     commandMsg.timestamp = millis();
     
     // Debug logging - show what we're actually sending
+#ifndef FAST_SWITCHING
     logf(LOG_DEBUG, "DEBUG: Sending commandType=%u, commandValue=%u", commandType, commandValue);
     logf(LOG_DEBUG, "DEBUG: STATUS_REQUEST enum value = %u", STATUS_REQUEST);
     logf(LOG_DEBUG, "DEBUG: commandMsg.commandType=%u, commandMsg.commandValue=%u", commandMsg.commandType, commandMsg.commandValue);
+#endif
     
     // Send the command
     esp_err_t result = esp_now_send(clientMac, (uint8_t*)&commandMsg, sizeof(commandMsg));
@@ -73,7 +75,9 @@ bool sendCommandToAllClients(uint8_t commandType, uint8_t commandValue) {
     bool allSuccess = true;
     int successCount = 0;
     
+    #ifndef FAST_SWITCHING
     logf(LOG_INFO, "Sending command to %d clients - Type: %u, Value: %u", numClients, commandType, commandValue);
+    #endif
     
     for (int i = 0; i < numClients; i++) {
         if (sendCommandToClient(clientMacAddresses[i], commandType, commandValue)) {
@@ -90,45 +94,59 @@ bool sendCommandToAllClients(uint8_t commandType, uint8_t commandValue) {
 
 // Helper function to send channel change command
 bool sendChannelChange(const uint8_t* clientMac, uint8_t channel) {
+    #ifndef FAST_SWITCHING
     logf(LOG_INFO, "Sending program change command: channel %u", channel);
+    #endif
     return sendCommandToClient(clientMac, PROGRAM_CHANGE, channel);
 }
 
 // Helper function to send channel change to all clients
 bool sendChannelChangeToAll(uint8_t channel) {
+    #ifndef FAST_SWITCHING
     logf(LOG_INFO, "Broadcasting program change command: channel %u", channel);
+    #endif
     return sendCommandToAllClients(PROGRAM_CHANGE, channel);
 }
 
 
 // Helper function to send all channels off command
 bool sendAllChannelsOff(const uint8_t* clientMac) {
+    #ifndef FAST_SWITCHING
     log(LOG_INFO, "Sending program change command: all channels off (channel 0)");
+    #endif
     return sendCommandToClient(clientMac, PROGRAM_CHANGE, 0);
 }
 
 // Helper function to send all channels off to all clients
 bool sendAllChannelsOffToAll() {
+    #ifndef FAST_SWITCHING
     log(LOG_INFO, "Broadcasting program change command: all channels off (channel 0)");
+    #endif
     return sendCommandToAllClients(PROGRAM_CHANGE, 0);
 }
 
 // Helper function to send status request command
 bool sendStatusRequest(const uint8_t* clientMac) {
+    #ifndef FAST_SWITCHING
     log(LOG_INFO, "Sending status request command");
+    #endif
     return sendCommandToClient(clientMac, STATUS_REQUEST, 0);
 }
 
 // Helper function to send status request to all clients
 bool sendStatusRequestToAll() {
+    #ifndef FAST_SWITCHING
     log(LOG_INFO, "Broadcasting status request command");
+    #endif
     return sendCommandToAllClients(STATUS_REQUEST, 0);
 }
 
 // Broadcast an incoming MIDI Program Change number over ESP-NOW.
 // The raw program number is placed in commandValue (PROGRAM_CHANGE) for client mapping logic.
 bool forwardMidiProgramToAll(uint8_t programNumber) {
+    #ifndef FAST_SWITCHING
     logf(LOG_INFO, "Forwarding MIDI Program Change %u to all clients", programNumber);
+    #endif
     return sendCommandToAllClients(PROGRAM_CHANGE, programNumber);
 }
 

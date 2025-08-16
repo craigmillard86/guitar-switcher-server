@@ -94,11 +94,18 @@ void setup() {
   // Initialize server configuration
   initializeServerConfiguration();
   
+  // Load server configuration from NVS (including channel)
+  loadServerConfigFromNVS();
+  
   // Load log level from NVS and initialize performance metrics
   currentLogLevel = loadLogLevelFromNVS();
   initializePerformanceMetrics();
   
   setupWiFiChannel();
+  
+  // Save the actual channel being used to NVS for consistency
+  saveServerConfigToNVS();
+  
   setupPairingButtonAndLED();  // This will now use the new system
   initESP_NOW();
   loadPeersFromNVS();

@@ -260,7 +260,9 @@ void handleButtonRelease(int buttonIndex, unsigned long held, bool* buttonPresse
                 // Send its mapped Program Change to clients
                 uint8_t pc = serverButtonProgramMap[buttonIndex];
                 forwardMidiProgramToAll(pc);
+                #ifndef FAST_SWITCHING
                 logf(LOG_INFO, "Button %d short press -> send PC %u", buttonIndex, pc);
+                #endif
                 currentLedPattern = LED_SINGLE_FLASH;
                 ledPatternStart = millis();
             } else if (serverMidiLearnArmed && serverMidiLearnTarget >= 0 && held < BUTTON_LONGPRESS_MS) {
