@@ -287,11 +287,16 @@ bool handleControlCommands(const String& cmd) {
         currentLogLevel = LOG_INFO;
         log(LOG_INFO, "Log level reset to default (INFO)");
         return true;
+    }   else if (cmd.equalsIgnoreCase("clearall")) {
+        log(LOG_WARN, "Clearing ALL NVS data and rebooting...");
+        clearAllNVS();
+        ESP.restart();
+        return true;
     } else if (cmd.equalsIgnoreCase("fspress")) {
         footswitchPressed = true;
         log(LOG_INFO, "Footswitch press simulated");
         return true;
-    }
+    } 
     return false;
 }
 
@@ -311,11 +316,6 @@ bool handlePairingCommands(const String& cmd) {
     } else if (cmd.equalsIgnoreCase("clearpeers")) {
         log(LOG_INFO, "Clearing all peers from NVS...");
         clearPeersNVS();
-        ESP.restart();
-        return true;
-    } else if (cmd.equalsIgnoreCase("clearall")) {
-        log(LOG_WARN, "Clearing ALL NVS data and rebooting...");
-        clearAllNVS();
         ESP.restart();
         return true;
     } else if (cmd.equalsIgnoreCase("pairing")) {
@@ -488,6 +488,7 @@ void printControlCommandsHelp() {
     Serial.println(F("  ota         : Enter OTA update mode"));
     Serial.println(F("  setlogN     : Set log level (N=0-4)"));
     Serial.println(F("  clearlog    : Clear saved log level (reset to default)"));
+    Serial.println(F("  clearall    : Clear ALL NVS data (factory reset)"));
     Serial.println(F("  fspress     : Simulate footswitch press"));
     Serial.println(F(""));
 }
@@ -496,7 +497,6 @@ void printPairingCommandsHelp() {
     Serial.println(F("PAIRING COMMANDS:"));
     Serial.println(F("  pair        : Start pairing mode"));
     Serial.println(F("  clearpeers  : Clear all peers from NVS"));
-    Serial.println(F("  clearall    : Clear ALL NVS data (factory reset)"));
     Serial.println(F("  pairing     : Show pairing status"));
     Serial.println(F(""));
 }

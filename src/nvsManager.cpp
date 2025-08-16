@@ -22,6 +22,7 @@
 #include <esp_err.h>
 #include <nvs.h>
 #include <esp_now.h>
+#include <espnow-pairing.h>
 
 Preferences preferences;
 
@@ -191,23 +192,39 @@ void loadPeersFromNVS() {
     int storedClients = preferences.getInt("numClients", 0);
     logf(LOG_DEBUG, "numClients in NVS: %d", storedClients);
     
+    // Reset counters - addPeer will manage them
     numClients = 0;
+    numLabeledPeers = 0;
+    
     for (int i = 0; i < storedClients && i < MAX_CLIENTS; i++) {
         char key[12];
         sprintf(key, "peer_%d", i);
-        size_t bytesRead = preferences.getBytes(key, clientMacAddresses[numClients], 6);
+        uint8_t tempMac[6];
+        size_t bytesRead = preferences.getBytes(key, tempMac, 6);
         
         if (bytesRead == 6) {
-            if (memcmp(clientMacAddresses[numClients], "\0\0\0\0\0\0", 6) != 0) {
-                // Load the peer name and add to labeled peers
+            if (memcmp(tempMac, "\0\0\0\0\0\0", 6) != 0) {
+                // Load the peer name first
                 char nameKey[16];
                 sprintf(nameKey, "peername_%d", i);
                 String peerName = preferences.getString(nameKey, "Unknown");
-                addLabeledPeer(clientMacAddresses[numClients], peerName.c_str());
                 
-                logf(LOG_DEBUG, "Loaded peer %d from NVS:", numClients);
-                printMAC(clientMacAddresses[numClients], LOG_DEBUG);
-                numClients++;
+                // Use the existing addPeer function to add to ESP-NOW and manage arrays
+                // Set save=false since we're loading from NVS, not adding new peers
+                if (addPeer(tempMac, false)) {
+                    // Update the peer name in labeledPeers (addPeer might not have the correct name)
+                    for (int j = 0; j < numLabeledPeers; j++) {
+                        if (memcmp(labeledPeers[j].mac, tempMac, 6) == 0) {
+                            strncpy(labeledPeers[j].name, peerName.c_str(), MAX_PEER_NAME_LEN);
+                            break;
+                        }
+                    }
+                    logf(LOG_DEBUG, "Loaded and added peer (%s) from NVS to ESP-NOW", peerName.c_str());
+                    printMAC(tempMac, LOG_DEBUG);
+                } else {
+                    logf(LOG_ERROR, "Failed to add peer from NVS to ESP-NOW");
+                    printMAC(tempMac, LOG_ERROR);
+                }
             }
         }
     }
