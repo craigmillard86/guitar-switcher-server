@@ -21,6 +21,7 @@ volatile bool pairingRequested = false;
 bool pairingMode = false;
 bool resetMode = false;
 bool serialOtaTrigger = false;
+bool serialConfigTrigger = false;
 PeerInfo labeledPeers[MAX_CLIENTS];
 int numLabeledPeers = 0;
 LogLevel currentLogLevel = LOG_DEBUG; 

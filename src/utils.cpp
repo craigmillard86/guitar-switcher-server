@@ -272,6 +272,10 @@ bool handleControlCommands(const String& cmd) {
         serialOtaTrigger = true;
         log(LOG_INFO, "OTA mode triggered");
         return true;
+    } else if (cmd.equalsIgnoreCase("config") || cmd.equalsIgnoreCase("webconfig")) {
+        serialConfigTrigger = true;
+        log(LOG_INFO, "Web configuration mode triggered");
+        return true;
     } else if (cmd.startsWith("setlog")) {
         int level = cmd.substring(6).toInt();
         if (level >= 0 && level <= 4) {
@@ -486,6 +490,7 @@ void printControlCommandsHelp() {
     Serial.println(F("CONTROL COMMANDS:"));
     Serial.println(F("  restart     : Reboot the device"));
     Serial.println(F("  ota         : Enter OTA update mode"));
+    Serial.println(F("  webconfig   : Enter web configuration mode"));
     Serial.println(F("  setlogN     : Set log level (N=0-4)"));
     Serial.println(F("  clearlog    : Clear saved log level (reset to default)"));
     Serial.println(F("  clearall    : Clear ALL NVS data (factory reset)"));

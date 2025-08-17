@@ -30,6 +30,7 @@ extern volatile bool pairingRequested;
 extern bool pairingMode;
 extern bool resetMode;
 extern bool serialOtaTrigger;
+extern bool serialConfigTrigger;
 #define MAX_CLIENTS 10
 #define STORAGE_VERSION 1
 extern uint8_t clientMacAddresses[MAX_CLIENTS][6];

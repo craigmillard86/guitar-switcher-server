@@ -30,6 +30,8 @@
 #include <relayControl.h>
 #include <midiInput.h>
 #include <nvsManager.h>
+#include <webConfigManager.h>
+#include <footswitchConfig.h>
 
 struct_message outgoingSetpoints;
 struct_message outgoingCommand;
@@ -76,11 +78,20 @@ void setup() {
 
   unsigned long serialWaitStart = millis();
   log(LOG_INFO, "Enter 'ota' within 10 seconds to enter OTA mode...");
+  log(LOG_INFO, "Or double-tap and hold pairing button for configuration mode...");
 
   while (millis() - serialWaitStart < 10000) {
     checkSerialCommands();
+    
+    // Check for configuration mode trigger
+    if (checkConfigTrigger()) {
+      log(LOG_INFO, "Configuration mode triggered!");
+      startConfigurationMode();
+      return;
+    }
+    
     delay(10);
-  if (serialOtaTrigger) break;
+    if (serialOtaTrigger) break;
   }
 
   if (checkOtaTrigger() || serialOtaTrigger) {
@@ -112,6 +123,9 @@ void setup() {
   initMidiInput();
   loadServerMidiConfigFromNVS();
   loadServerButtonPcMapFromNVS();
+  
+  // Initialize footswitch configuration
+  initFootswitchConfig();
 }
 void prepareChannelChangeCommand() {
   outgoingCommand.msgType = COMMAND;
@@ -130,6 +144,10 @@ void loop() {
   
   // Update footswitch state
   updateFootswitchState();
+  
+  // Process footswitch input for configured actions
+  processFootswitchInput();
+  
   // Poll MIDI input (non-blocking)
   processMidiInput();
 

@@ -381,3 +381,7 @@ bool loadServerButtonPcMapFromNVS() {
     if (ok) logf(LOG_INFO, "Loaded button PC map (count=%u)", serverButtonCount); else log(LOG_INFO, "No saved button PC map - using defaults");
     return ok;
 }
+
+// --- Footswitch Configuration Management ---
+// Note: These functions are now implemented in footswitchConfig.cpp
+// Keeping declarations here for compatibility but they forward to the actual implementations
